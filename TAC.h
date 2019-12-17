@@ -10,7 +10,7 @@
 #include "ast.h"
 
 struct opn{
-
+    int kind;
 };
 
 struct TACnode{
@@ -20,7 +20,29 @@ struct TACnode{
 };
 
 
-
+enum OperationType{
+    LABEL,
+    FUNCTION,
+    ASSIGN,
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    GOTO,
+    PARAM,
+    ARG,
+    CALL,
+    AND,
+    OR,
+    NOT,
+    JG,
+    JGE,
+    JL,
+    JLE,
+    EQ,
+    NEQ,
+    
+};
 
 
 #endif
