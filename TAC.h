@@ -13,7 +13,18 @@
 #include "ast.h"
 
 struct opn{
-    int kind;
+    int type;                   //操作数实际数据类型
+    int kind;                   //标明联合成员的属性
+    union member
+    {
+        int const_int;
+        float const_float;
+        double const_double;
+        char const_char;
+        char id[33];            //变量|临时变量的别名or标号字符串
+    };
+    int level;          //层号
+    int offset;         //偏移量
 };
 
 typedef struct TACnode{
@@ -52,7 +63,6 @@ enum OperationType{
     JLE,
     EQ,
     NEQ,
-    
 };
 
 

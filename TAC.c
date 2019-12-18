@@ -19,8 +19,20 @@ pTACnode newTACnode(){
 }
 
 pTACnode generateTAC(int op, int pNum, ...){
+    pTACnode TACnode = newTACnode();
+    TACnode->op = op;
     va_list pArgs = NULL;
     va_start(pArgs, pNum);
+    if(pNum == 1){
+        char* label = va_arg(pArgs, char*);
+        switch(op){
+        case LABEL:
+            break;
+        case GOTO:
+            break;
+        }
+    }else{
 
+    }
     va_end(pArgs);
 }
