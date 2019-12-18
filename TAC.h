@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include "semanticAnalyzer.h"
+
+FILE* err_out;
+FILE* TAC_out;
 
 struct opn{
     int type;                   //操作数实际数据类型
@@ -35,12 +39,19 @@ typedef struct TACnode{
 
 struct XASTnode{
     struct ASTnode ori;
+    struct TACnode tac_head;        //拓展AST节点拥有的中间代码序列头指针
+    char *Jwbt, *Jwbf;              //当表达式解析为bool结果时,标明Jump的标号,Jump while bool true|false
 };
 
+int initTACgenerator();
 struct opn* newOpn();
 pTACnode newTACnode();
 pTACnode generateTAC(int op, int pNum, ...);
 
+int TAC_Traversal(struct ASTnode* root);
+
+//Assume "generator analyze" as GA
+int GA_ExtDef(struct ASTnode* extDef);
 
 enum OperationType{
     LABEL,
