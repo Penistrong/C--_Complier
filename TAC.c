@@ -7,3 +7,20 @@
 */
 #include "TAC.h"
 
+struct opn* newOpn(){
+    struct opn* newOpn = (struct opn *)malloc(sizeof(struct opn));
+}
+
+pTACnode newTACnode(){
+    pTACnode newTACnode = (pTACnode)malloc(sizeof(struct TACnode));
+    newTACnode->opn1 = newTACnode->opn2 = newTACnode->result = NULL;
+    newTACnode->next = newTACnode->prior = NULL;
+    return newTACnode;
+}
+
+pTACnode generateTAC(int op, int pNum, ...){
+    va_list pArgs = NULL;
+    va_start(pArgs, pNum);
+
+    va_end(pArgs);
+}

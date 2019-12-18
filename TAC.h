@@ -7,17 +7,28 @@
 */
 #ifndef _TAC_H
 #define _TAC_H
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ast.h"
 
 struct opn{
     int kind;
 };
 
-struct TACnode{
+typedef struct TACnode{
     int op;                         //操作类型说明
-    struct opn opn1, opn2, result;  //操作数1,操作数2,运算结果
+    struct opn *opn1, *opn2, *result;  //操作数1,操作数2,运算结果
     struct TACnode *next, *prior;
+}*pTACnode;
+
+struct XASTnode{
+    struct ASTnode ori;
 };
+
+struct opn* newOpn();
+pTACnode newTACnode();
+pTACnode generateTAC(int op, int pNum, ...);
 
 
 enum OperationType{
@@ -43,6 +54,7 @@ enum OperationType{
     NEQ,
     
 };
+
 
 
 #endif
