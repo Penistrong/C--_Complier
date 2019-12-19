@@ -6,6 +6,7 @@
 */
 #include "ast.h"
 #include "semanticAnalyzer.h"
+#include "TAC.h"
 
 //采用作用域与多符号表组织
 
@@ -66,6 +67,7 @@ void semantic_Analyze(struct ASTnode *root){
     if(root == NULL){
         return;
     }
+    //printXAST(expandAST(root), 0, -1, NULL, 0);此句用来测试拓展语法树结构是否正常
     stack = initStack();
     initializeSymbolTable();
     push(current_ST);           //当前符号表入栈
