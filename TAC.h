@@ -58,6 +58,14 @@ struct XASTnode{
     int num;                        //计数器,用来统计形参数量或者一次性定义的多个变量个数
 };
 
+typedef struct SymbolTable{
+    union {
+        struct Var_Symbol var_symbol;
+        struct Func_Symbol func_symbol;
+    };
+    
+};
+
 char* _strcat_(char* des, char* src);
 
 int initTACgenerator();
@@ -73,6 +81,12 @@ struct XASTnode* createXASTnode(struct ASTnode* root);
 
 int TAC_Traversal(struct XASTnode* root);
 void printXAST(struct XASTnode *root, int lvl, int prelvl, char* prefix, int hasBro);
+int fill_ST(struct XASTnode *ID);
+
+//自动生成标记、别名、临时变量名,用于填写符号表时按序自增相应量
+char* auto_Alias();
+char* auto_Temp();
+char* auto_Label();
 
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);

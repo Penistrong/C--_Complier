@@ -217,6 +217,27 @@ int calWidth(int kind){
     }
 }
 
+char* auto_Alias(){
+    static int counter = 1;
+    char s[10];
+    sprintf(s, "%d", counter++);
+    return _strcat_("var",s);
+}
+
+char* auto_Label(){
+    static int counter = 1;
+    char s[10];
+    sprintf(s, "%d", counter++);
+    return _strcat_("label",s);
+}
+
+char* auto_Temp(){
+    static int counter = 1;
+    char s[10];
+    sprintf(s, "%d", counter++);
+    return _strcat_("temp",s);
+}
+
 //TAC生成器周游AST时,已经假定没有任何语义错误存在,故而直接生成TAC代码而不加检错
 int TAC_Traversal(struct XASTnode* root){
     if(root == NULL)
@@ -224,7 +245,15 @@ int TAC_Traversal(struct XASTnode* root){
     int num,width;                              //标识节点数和偏移量
     switch(root->kind){
     case EXTDEFLIST:
-        
+        root->childNode[0]->offset = root->offset;
+        TAC_Traversal(root->childNode[0]);
+        root->tac_head = root->childNode[0]->tac_head;
+        //判断是否有ExtDefList->ExtDef ExtDefList子树存在
+        if(root->childNode[1] != NULL){
+            root->childNode[1]->offset = root->childNode[0]->offset + root->childNode[0]->width;    //第二个子树的起始偏移量为第一个子树的偏移量+第一个子树的宽度
+            TAC_Traversal(root->childNode[1]);
+            root->tac_head = mergeTAC(2, root->tac_head, root->childNode[1]->tac_head);             //合并左子树与右子树的TAC链表
+        }
         break;
     case EXTDEF:
         GA_ExtDef(root);
@@ -243,7 +272,8 @@ int GA_ExtDef(struct XASTnode* extDef){
     switch(extDef->childNode[1]->kind){
     case EXTDECLIST:
         //ExtDef -> Specifier ExtDecList SEMI
-        type = extDef->childNode[0]->childNode[0]->type_id;
+        type = spec->childNode[0]->type_id;
+        //ExtDecList下可能有多个外部变量声明
         break;
     case FUNCDEC:
         break;
