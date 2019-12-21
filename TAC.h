@@ -56,13 +56,12 @@ struct XASTnode{
     int offset;                     //偏移量
     int width;                      //占数据宽度/字节数
     int num;                        //计数器,用来统计形参数量或者一次性定义的多个变量个数
+    int place;                      //标识符节点在符号表中的位置,与符号表中的index对应
 };
 
 typedef struct SymbolTable{
-    union {
-        struct Var_Symbol var_symbol;
-        struct Func_Symbol func_symbol;
-    };
+    struct Var_Symbol var_symbol;
+    struct Func_Symbol func_symbol;
     
 };
 
@@ -81,7 +80,7 @@ struct XASTnode* createXASTnode(struct ASTnode* root);
 
 int TAC_Traversal(struct XASTnode* root);
 void printXAST(struct XASTnode *root, int lvl, int prelvl, char* prefix, int hasBro);
-int fill_ST(struct XASTnode *ID);
+int fill_ST(int kind, int num, char* type, int offset, ...);
 
 //自动生成标记、别名、临时变量名,用于填写符号表时按序自增相应量
 char* auto_Alias();
@@ -90,6 +89,8 @@ char* auto_Label();
 
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);
+
+
 
 enum OperationType{
     LABEL,
@@ -114,6 +115,10 @@ enum OperationType{
     NEQ,
 };
 
+enum SymbolType{
+    VAR_SYMBOL,
+    FUNC_SYMBOL
+};
 
 
 #endif

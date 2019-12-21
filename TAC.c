@@ -10,6 +10,9 @@
 extern FILE* yyout;
 struct XASTnode* root;  //整颗拓展语法树的根节点
 
+//层号
+int lvl = 0;
+
 //字符串拼接,返回的是新串,不改变原串
 char* _strcat_(char* des, char* src){
     char* res = (char*)malloc(sizeof(char)*(strlen(des)+strlen(src)));
@@ -238,6 +241,11 @@ char* auto_Temp(){
     return _strcat_("temp",s);
 }
 
+int fill_ST(int kind, int num, char* type, int offset, ...){
+    va_list pArgs = NULL;
+    va_start(pArgs, offset);
+}
+
 //TAC生成器周游AST时,已经假定没有任何语义错误存在,故而直接生成TAC代码而不加检错
 int TAC_Traversal(struct XASTnode* root){
     if(root == NULL)
@@ -274,6 +282,13 @@ int GA_ExtDef(struct XASTnode* extDef){
         //ExtDef -> Specifier ExtDecList SEMI
         type = spec->childNode[0]->type_id;
         //ExtDecList下可能有多个外部变量声明
+        struct XASTnode* extDecList = extDef->childNode[1];
+        struct XASTnode* ID;
+        while(extDecList != NULL){
+            ID = extDecList->childNode[0]->childNode[0];
+            ID->place
+            extDecList = extDecList->childNode[2];
+        }
         break;
     case FUNCDEC:
         break;
