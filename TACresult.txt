@@ -1,0 +1,6 @@
+a	int		var1	0	0
+m	int		var2	4	0
+n	int		var3	8	0
+b	double		var4	12	0
+c	double		var5	20	0
+d	float		var6	28	0

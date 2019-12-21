@@ -12,6 +12,7 @@
 #include <string.h>
 #include "ast.h"
 #include "semanticAnalyzer.h"
+#define DX 3*sizeof(int)    //函数活动记录控制信息大小
 
 FILE* err_out;
 FILE* TAC_out;
@@ -60,27 +61,29 @@ struct XASTnode{
 };
 
 typedef struct SymbolTable{
-    struct Var_Symbol var_symbol;
-    struct Func_Symbol func_symbol;
-    
-};
+    struct Var_Symbol * var_symbol;
+    struct Func_Symbol * func_symbol;
+    int vindex; //变量符号表当前索引位置
+    int findex; //函数符号表当前索引位置
+}TAC_ST;
 
 char* _strcat_(char* des, char* src);
 
+int initSymbolTable();
 int initTACgenerator();
 struct opn* newOpn();
 pTACnode newTACnode();
 pTACnode generateTAC(int op, int pNum, ...);
 pTACnode mergeTAC(int num, ...);
 
-int calWidth(int kind);
+int calWidth(int kind, ...);
 
 struct XASTnode* expandAST(struct ASTnode* root);
 struct XASTnode* createXASTnode(struct ASTnode* root);
 
 int TAC_Traversal(struct XASTnode* root);
 void printXAST(struct XASTnode *root, int lvl, int prelvl, char* prefix, int hasBro);
-int fill_ST(int kind, int num, char* type, int offset, ...);
+int fill_ST(int symbol_kind, int num, char* type, int offset, ...);
 
 //自动生成标记、别名、临时变量名,用于填写符号表时按序自增相应量
 char* auto_Alias();
@@ -90,7 +93,7 @@ char* auto_Label();
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);
 
-
+void printTAC_ST();
 
 enum OperationType{
     LABEL,

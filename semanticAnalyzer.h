@@ -39,6 +39,8 @@ typedef struct Var_Symbol
     int line;                           //变量所在行数
     int lvl;                            //变量所在作用域层号
     struct Var_Symbol *next;            //指向下一个变量符号
+    char* alias;                        //别名 TAC生成器使用
+    int offset;                         //偏移量 TAC生成器使用
 }Var, *pVar, *pVar_ST_Head, *pVar_ST_Tail;
 
 //函数符号表节点
@@ -52,6 +54,8 @@ typedef struct Func_Symbol
     pVar paramList;     //形参列表
     int line;           //函数定义的位置
     struct Func_Symbol *next;           //指向下一个函数符号
+    char* alias;                        //别名 TAC生成器使用
+    int offset;                         //偏移量 TAC生成器使用
 }*pFunc, *pFunc_ST_Head, *pFunc_ST_Tail;
 
 //数组符号表节点

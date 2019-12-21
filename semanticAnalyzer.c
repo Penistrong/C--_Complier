@@ -73,6 +73,10 @@ void semantic_Analyze(struct ASTnode *root){
     push(current_ST);           //当前符号表入栈
     AST_Traversal(root);
     printScope_ST(current_ST);
+    if(initTACgenerator() != 0){
+        TAC_Traversal(expandAST(root));
+        printTAC_ST();
+    }
 }
 
 //递归，抽象语法树的递归遍历
