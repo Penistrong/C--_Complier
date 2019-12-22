@@ -127,7 +127,7 @@ FuncDec
 
 VarList
         : ParamDec { $$=createASTnode(1, VARLIST, "VarList", yylineno, $1); }
-        | ParamDec COMMA VarList { $$=createASTnode(2, VARLIST, "VarList", yylineno, $1, $3); }
+        | ParamDec COMMA VarList { $$=createASTnode(3, VARLIST, "VarList", yylineno, $1, $2, $3); }
         ;
 
 ParamDec

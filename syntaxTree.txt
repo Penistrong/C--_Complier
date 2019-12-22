@@ -3,41 +3,346 @@
 
 
 
-
-Program  (9)
-└─ExtDefList  (9)
-    ├─ExtDef  (9)
-    │  ├─Specifier  (9)
+Program  (7)
+└─ExtDefList  (7)
+    ├─ExtDef  (7)
+    │  ├─Specifier  (7)
     │  │  └─TYPE:  int
-    │  ├─ExtDecList  (9)
-    │  │  ├─VarDec  (9)
+    │  ├─ExtDecList  (7)
+    │  │  ├─VarDec  (7)
     │  │  │  └─ID:  a
-    │  │  ├─COMMA  (9)
-    │  │  └─ExtDecList  (9)
-    │  │      ├─VarDec  (9)
+    │  │  ├─COMMA  (7)
+    │  │  └─ExtDecList  (7)
+    │  │      ├─VarDec  (7)
     │  │      │  └─ID:  m
-    │  │      ├─COMMA  (9)
-    │  │      └─ExtDecList  (9)
-    │  │          └─VarDec  (9)
+    │  │      ├─COMMA  (7)
+    │  │      └─ExtDecList  (7)
+    │  │          └─VarDec  (7)
     │  │              └─ID:  n
-    │  └─SEMI  (9)
-    └─ExtDefList  (10)
-        ├─ExtDef  (10)
-        │  ├─Specifier  (10)
-        │  │  └─TYPE:  double
-        │  ├─ExtDecList  (10)
-        │  │  ├─VarDec  (10)
-        │  │  │  └─ID:  b
-        │  │  ├─COMMA  (10)
-        │  │  └─ExtDecList  (10)
-        │  │      └─VarDec  (10)
-        │  │          └─ID:  c
-        │  └─SEMI  (10)
-        └─ExtDefList  (11)
-            └─ExtDef  (11)
-                ├─Specifier  (11)
-                │  └─TYPE:  float
-                ├─ExtDecList  (11)
-                │  └─VarDec  (11)
-                │      └─ID:  d
-                └─SEMI  (11)
+    │  └─SEMI  (7)
+    └─ExtDefList  (8)
+        ├─ExtDef  (8)
+        │  ├─Specifier  (8)
+        │  │  └─TYPE:  float
+        │  ├─ExtDecList  (8)
+        │  │  ├─VarDec  (8)
+        │  │  │  └─ID:  a
+        │  │  ├─COMMA  (8)
+        │  │  └─ExtDecList  (8)
+        │  │      └─VarDec  (8)
+        │  │          └─ID:  b
+        │  └─SEMI  (8)
+        └─ExtDefList  (9)
+            ├─ExtDef  (9)
+            │  ├─Specifier  (9)
+            │  │  └─TYPE:  double
+            │  ├─ExtDecList  (9)
+            │  │  └─VarDec  (9)
+            │  │      └─ID:  c
+            │  └─SEMI  (9)
+            └─ExtDefList  (11)
+                ├─ExtDef  (11)
+                │  ├─Specifier  (11)
+                │  │  └─TYPE:  int
+                │  ├─FuncDec  (11)
+                │  │  ├─ID:  func_1
+                │  │  ├─LP  (11)
+                │  │  ├─VarList  (11)
+                │  │  │  ├─ParamDec  (11)
+                │  │  │  │  ├─Specifier  (11)
+                │  │  │  │  │  └─TYPE:  double
+                │  │  │  │  └─VarDec  (11)
+                │  │  │  │      └─ID:  d1
+                │  │  │  ├─COMMA  (11)
+                │  │  │  └─VarList  (11)
+                │  │  │      └─ParamDec  (11)
+                │  │  │          ├─Specifier  (11)
+                │  │  │          │  └─TYPE:  float
+                │  │  │          └─VarDec  (11)
+                │  │  │              └─ID:  f2
+                │  │  └─RP  (11)
+                │  └─CompSt  (11)
+                │      ├─LC  (11)
+                │      ├─DefList  (12)
+                │      │  ├─Def  (12)
+                │      │  │  ├─Specifier  (12)
+                │      │  │  │  └─TYPE:  int
+                │      │  │  ├─DecList  (12)
+                │      │  │  │  └─Dec  (12)
+                │      │  │  │      ├─VarDec  (12)
+                │      │  │  │      │  └─ID:  a
+                │      │  │  │      ├─ASSIGNOP  (12)
+                │      │  │  │      └─Exp  (12)
+                │      │  │  │          └─FLOAT:  0.500000
+                │      │  │  └─SEMI  (12)
+                │      │  └─DefList  (13)
+                │      │      └─Def  (13)
+                │      │          ├─Specifier  (13)
+                │      │          │  └─TYPE:  double
+                │      │          ├─DecList  (13)
+                │      │          │  └─Dec  (13)
+                │      │          │      └─VarDec  (13)
+                │      │          │          └─ID:  b1
+                │      │          └─SEMI  (13)
+                │      ├─StmList  (14)
+                │      │  ├─Stmt  (14)
+                │      │  │  ├─Exp  (14)
+                │      │  │  │  ├─Exp  (14)
+                │      │  │  │  │  └─ID:  c1
+                │      │  │  │  ├─ASSIGNOP  (14)
+                │      │  │  │  └─Exp  (14)
+                │      │  │  │      └─FLOAT:  0.500000
+                │      │  │  └─SEMI  (14)
+                │      │  └─StmList  (15)
+                │      │      ├─Stmt  (15)
+                │      │      │  ├─Exp  (15)
+                │      │      │  │  ├─Exp  (15)
+                │      │      │  │  │  └─ID:  c2
+                │      │      │  │  └─INC_OP  (15)
+                │      │      │  └─SEMI  (15)
+                │      │      └─StmList  (16)
+                │      │          └─Stmt  (16)
+                │      │              ├─RETURN  (16)
+                │      │              ├─Exp  (16)
+                │      │              │  └─FLOAT:  0.500000
+                │      │              └─SEMI  (16)
+                │      └─RC  (17)
+                └─ExtDefList  (19)
+                    ├─ExtDef  (19)
+                    │  ├─Specifier  (19)
+                    │  │  └─TYPE:  int
+                    │  ├─ExtDecList  (19)
+                    │  │  └─VarDec  (19)
+                    │  │      └─ID:  cas
+                    │  └─SEMI  (19)
+                    └─ExtDefList  (21)
+                        ├─ExtDef  (21)
+                        │  ├─Specifier  (21)
+                        │  │  └─TYPE:  int
+                        │  ├─FuncDec  (21)
+                        │  │  ├─ID:  func_2
+                        │  │  ├─LP  (21)
+                        │  │  ├─VarList  (21)
+                        │  │  │  ├─ParamDec  (21)
+                        │  │  │  │  ├─Specifier  (21)
+                        │  │  │  │  │  └─TYPE:  int
+                        │  │  │  │  └─VarDec  (21)
+                        │  │  │  │      └─ID:  p1
+                        │  │  │  ├─COMMA  (21)
+                        │  │  │  └─VarList  (21)
+                        │  │  │      └─ParamDec  (21)
+                        │  │  │          ├─Specifier  (21)
+                        │  │  │          │  └─TYPE:  double
+                        │  │  │          └─VarDec  (21)
+                        │  │  │              └─ID:  p2
+                        │  │  └─RP  (21)
+                        │  └─CompSt  (21)
+                        │      └─LC  (21)
+                        │      ├─StmList  (22)
+                        │      │  ├─Stmt  (22)
+                        │      │  │  ├─Exp  (22)
+                        │      │  │  │  ├─ID:  func_3
+                        │      │  │  │  ├─LP  (22)
+                        │      │  │  │  └─RP  (22)
+                        │      │  │  └─SEMI  (22)
+                        │      │  └─StmList  (23)
+                        │      │      ├─Stmt  (23)
+                        │      │      │  ├─Exp  (23)
+                        │      │      │  │  ├─ID:  c
+                        │      │      │  │  ├─LP  (23)
+                        │      │      │  │  └─RP  (23)
+                        │      │      │  └─SEMI  (23)
+                        │      │      └─StmList  (24)
+                        │      │          └─Stmt  (24)
+                        │      │              ├─Exp  (24)
+                        │      │              │  ├─Exp  (24)
+                        │      │              │  │  └─ID:  func_1
+                        │      │              │  ├─ASSIGNOP  (24)
+                        │      │              │  └─Exp  (24)
+                        │      │              │      └─FLOAT:  0.500000
+                        │      │              └─SEMI  (24)
+                        │      └─RC  (25)
+                        └─ExtDefList  (27)
+                            ├─ExtDef  (27)
+                            │  ├─Specifier  (27)
+                            │  │  └─TYPE:  float
+                            │  ├─FuncDec  (27)
+                            │  │  ├─ID:  func_3
+                            │  │  ├─LP  (27)
+                            │  │  └─RP  (27)
+                            │  └─CompSt  (27)
+                            │      └─LC  (27)
+                            │      ├─StmList  (28)
+                            │      │  ├─Stmt  (28)
+                            │      │  │  ├─Exp  (28)
+                            │      │  │  │  └─ID:  func_2
+                            │      │  │  └─SEMI  (28)
+                            │      │  └─StmList  (29)
+                            │      │      ├─Stmt  (29)
+                            │      │      │  ├─Exp  (29)
+                            │      │      │  │  ├─ID:  func_2
+                            │      │      │  │  ├─LP  (29)
+                            │      │      │  │  ├─Args  (29)
+                            │      │      │  │  │  ├─Exp  (29)
+                            │      │      │  │  │  │  └─INT:  1
+                            │      │      │  │  │  ├─COMMA  (29)
+                            │      │      │  │  │  └─Args  (29)
+                            │      │      │  │  │      └─Exp  (29)
+                            │      │      │  │  │          └─INT:  1
+                            │      │      │  │  └─RP  (29)
+                            │      │      │  └─SEMI  (29)
+                            │      │      └─StmList  (30)
+                            │      │          ├─Stmt  (30)
+                            │      │          │  ├─Exp  (30)
+                            │      │          │  │  ├─ID:  func_2
+                            │      │          │  │  ├─LP  (30)
+                            │      │          │  │  ├─Args  (30)
+                            │      │          │  │  │  └─Exp  (30)
+                            │      │          │  │  │      └─INT:  1
+                            │      │          │  │  └─RP  (30)
+                            │      │          │  └─SEMI  (30)
+                            │      │          └─StmList  (31)
+                            │      │              ├─Stmt  (31)
+                            │      │              │  ├─Exp  (31)
+                            │      │              │  │  ├─Exp  (31)
+                            │      │              │  │  │  └─ID:  b
+                            │      │              │  │  ├─ASSIGNOP  (31)
+                            │      │              │  │  └─Exp  (31)
+                            │      │              │  │      └─INT:  1
+                            │      │              │  └─SEMI  (31)
+                            │      │              └─StmList  (32)
+                            │      │                  └─Stmt  (32)
+                            │      │                      ├─RETURN  (32)
+                            │      │                      ├─Exp  (32)
+                            │      │                      │  └─ID:  b
+                            │      │                      └─SEMI  (32)
+                            │      └─RC  (33)
+                            └─ExtDefList  (35)
+                                └─ExtDef  (35)
+                                    ├─Specifier  (35)
+                                    │  └─TYPE:  void
+                                    ├─FuncDec  (35)
+                                    │  ├─ID:  func_4
+                                    │  ├─LP  (35)
+                                    │  └─RP  (35)
+                                    └─CompSt  (35)
+                                        └─LC  (35)
+                                        ├─StmList  (36)
+                                        │  ├─Stmt  (36)
+                                        │  │  ├─IF  (36)
+                                        │  │  ├─LP  (36)
+                                        │  │  ├─Exp  (36)
+                                        │  │  │  ├─Exp  (36)
+                                        │  │  │  │  └─ID:  a
+                                        │  │  │  ├─RELOP:[<=]
+                                        │  │  │  └─Exp  (36)
+                                        │  │  │      └─INT:  1
+                                        │  │  ├─RP  (36)
+                                        │  │  ├─Stmt  (36)
+                                        │  │  │  └─CompSt  (36)
+                                        │  │  │      └─LC  (36)
+                                        │  │  │      ├─StmList  (37)
+                                        │  │  │      │  └─Stmt  (37)
+                                        │  │  │      │      ├─Exp  (37)
+                                        │  │  │      │      │  ├─Exp  (37)
+                                        │  │  │      │      │  │  └─ID:  a
+                                        │  │  │      │      │  └─INC_OP  (37)
+                                        │  │  │      │      └─SEMI  (37)
+                                        │  │  │      └─RC  (38)
+                                        │  │  ├─ELSE  (38)
+                                        │  │  └─Stmt  (38)
+                                        │  │      ├─IF  (38)
+                                        │  │      ├─LP  (38)
+                                        │  │      ├─Exp  (38)
+                                        │  │      │  ├─Exp  (38)
+                                        │  │      │  │  └─ID:  b
+                                        │  │      │  ├─EQ_OP  (38)
+                                        │  │      │  └─Exp  (38)
+                                        │  │      │      └─INT:  0
+                                        │  │      ├─RP  (38)
+                                        │  │      ├─Stmt  (38)
+                                        │  │      │  └─CompSt  (38)
+                                        │  │      │      └─LC  (38)
+                                        │  │      │      ├─StmList  (39)
+                                        │  │      │      │  ├─Stmt  (39)
+                                        │  │      │      │  │  ├─Exp  (39)
+                                        │  │      │      │  │  │  ├─Exp  (39)
+                                        │  │      │      │  │  │  │  └─ID:  b
+                                        │  │      │      │  │  │  └─DEC_OP  (39)
+                                        │  │      │      │  │  └─SEMI  (39)
+                                        │  │      │      │  └─StmList  (40)
+                                        │  │      │      │      └─Stmt  (40)
+                                        │  │      │      │          ├─BREAK  (40)
+                                        │  │      │      │          └─SEMI  (40)
+                                        │  │      │      └─RC  (41)
+                                        │  │      ├─ELSE  (41)
+                                        │  │      └─Stmt  (41)
+                                        │  │          └─CompSt  (41)
+                                        │  │              └─LC  (41)
+                                        │  │              ├─StmList  (42)
+                                        │  │              │  ├─Stmt  (42)
+                                        │  │              │  │  ├─Exp  (42)
+                                        │  │              │  │  │  ├─Exp  (42)
+                                        │  │              │  │  │  │  └─ID:  a
+                                        │  │              │  │  │  ├─ASSIGNOP  (42)
+                                        │  │              │  │  │  └─Exp  (42)
+                                        │  │              │  │  │      └─INT:  0
+                                        │  │              │  │  └─SEMI  (42)
+                                        │  │              │  └─StmList  (43)
+                                        │  │              │      └─Stmt  (43)
+                                        │  │              │          ├─CONTINUE  (43)
+                                        │  │              │          └─SEMI  (43)
+                                        │  │              └─RC  (44)
+                                        │  └─StmList  (46)
+                                        │      └─Stmt  (46)
+                                        │          ├─DO  (46)
+                                        │          ├─Stmt  (46)
+                                        │          │  └─CompSt  (46)
+                                        │          │      └─LC  (46)
+                                        │          │      ├─StmList  (47)
+                                        │          │      │  ├─Stmt  (47)
+                                        │          │      │  │  ├─Exp  (47)
+                                        │          │      │  │  │  ├─Exp  (47)
+                                        │          │      │  │  │  │  └─ID:  a
+                                        │          │      │  │  │  └─INC_OP  (47)
+                                        │          │      │  │  └─SEMI  (47)
+                                        │          │      │  └─StmList  (48)
+                                        │          │      │      ├─Stmt  (48)
+                                        │          │      │      │  ├─IF  (48)
+                                        │          │      │      │  ├─LP  (48)
+                                        │          │      │      │  ├─Exp  (48)
+                                        │          │      │      │  │  ├─Exp  (48)
+                                        │          │      │      │  │  │  └─ID:  a
+                                        │          │      │      │  │  ├─RELOP:[>=]
+                                        │          │      │      │  │  └─Exp  (48)
+                                        │          │      │      │  │      └─INT:  0
+                                        │          │      │      │  ├─RP  (48)
+                                        │          │      │      │  └─Stmt  (49)
+                                        │          │      │      │      ├─BREAK  (49)
+                                        │          │      │      │      └─SEMI  (49)
+                                        │          │      │      └─StmList  (50)
+                                        │          │      │          └─Stmt  (50)
+                                        │          │      │              ├─IF  (50)
+                                        │          │      │              ├─LP  (50)
+                                        │          │      │              ├─Exp  (50)
+                                        │          │      │              │  ├─Exp  (50)
+                                        │          │      │              │  │  └─ID:  a
+                                        │          │      │              │  ├─RELOP:[<]
+                                        │          │      │              │  └─Exp  (50)
+                                        │          │      │              │      └─INT:  0
+                                        │          │      │              ├─RP  (50)
+                                        │          │      │              └─Stmt  (51)
+                                        │          │      │                  ├─CONTINUE  (51)
+                                        │          │      │                  └─SEMI  (51)
+                                        │          │      └─RC  (52)
+                                        │          ├─WHILE  (52)
+                                        │          ├─LP  (52)
+                                        │          ├─Exp  (52)
+                                        │          │  ├─Exp  (52)
+                                        │          │  │  └─ID:  a
+                                        │          │  ├─RELOP:[<=]
+                                        │          │  └─Exp  (52)
+                                        │          │      └─INT:  0
+                                        │          ├─RP  (52)
+                                        │          └─SEMI  (52)
+                                        └─RC  (54)

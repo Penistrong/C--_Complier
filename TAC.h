@@ -89,11 +89,15 @@ int fill_ST(int symbol_kind, int num, char* type, int offset, ...);
 char* auto_Alias();
 char* auto_Temp();
 char* auto_Label();
-
+//根据变量索引搜索别名
+char* searchAlias(int index);
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);
+int GA_VarList(struct XASTnode* varList);
+int GA_CompSt(struct XASTnode* compSt);
 
 void printTAC_ST();
+void printTAC_code(pTACnode tac_head);
 
 enum OperationType{
     LABEL,

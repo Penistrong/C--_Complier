@@ -8,13 +8,15 @@ int a, m, n;
 float a, b;
 double c;
 
-int func_1(){
+int func_1(double d1, float f2){
     int a = 0.5;
     double b1;
     c1 = 0.5;
     c2++;
     return 0.5;
 }
+
+int cas;
 
 int func_2(int p1, double p2){
     func_3();

@@ -1744,7 +1744,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 130 ".\\singleParser.y"
-    { (yyval.node)=createASTnode(2, VARLIST, "VarList", yylineno, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
+    { (yyval.node)=createASTnode(3, VARLIST, "VarList", yylineno, (yyvsp[(1) - (3)].node), (yyvsp[(2) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 25:

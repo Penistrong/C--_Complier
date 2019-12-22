@@ -56,6 +56,7 @@ typedef struct Func_Symbol
     struct Func_Symbol *next;           //指向下一个函数符号
     char* alias;                        //别名 TAC生成器使用
     int offset;                         //偏移量 TAC生成器使用
+    int pIndex_begin;                   //起始形参在变量符号表中的索引 TAC生成器用
 }*pFunc, *pFunc_ST_Head, *pFunc_ST_Tail;
 
 //数组符号表节点

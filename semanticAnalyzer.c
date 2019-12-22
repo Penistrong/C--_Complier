@@ -74,8 +74,10 @@ void semantic_Analyze(struct ASTnode *root){
     AST_Traversal(root);
     printScope_ST(current_ST);
     if(initTACgenerator() != 0){
-        TAC_Traversal(expandAST(root));
+        struct XASTnode *xRoot = expandAST(root);
+        TAC_Traversal(xRoot);
         printTAC_ST();
+        printTAC_code(xRoot->tac_head);
     }
 }
 
@@ -327,8 +329,8 @@ int analyzeExtDef(struct ASTnode *extDef){
                 //VarList->ParamDec->Specifier VarDec
                 paramList[0] = varList->childNode[0];
                 int paramNum = 1;
-                while(varList->childNode[1] != NULL){
-                    varList = varList->childNode[1];
+                while(varList->childNode[2] != NULL){
+                    varList = varList->childNode[2];
                     paramList[paramNum++] = varList->childNode[0];
                 }
                 newFuncSymbol(type, funcDec->childNode[0]->type_id, funcDec->childNode[0]->pos, paramNum, paramList);

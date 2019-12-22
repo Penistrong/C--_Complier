@@ -9,3 +9,11 @@
 int a, m, n;
 double b, c;
 float d;
+
+int func1(double d1, float f2){
+
+};
+
+int func2(int i){
+
+};
