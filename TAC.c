@@ -442,6 +442,7 @@ int GA_ExtDef(struct XASTnode* extDef){
             varList->offset = funcDec->offset;
             int pIndex_begin = GA_VarList(varList);
             extDef->offset += varList->width;
+            funcDec->width += varList->width;
             //VarList->ParamDec->Specifier VarDec
             //连接函数定义TAC及其形参定义TAC,形参个数储存在第一个varList节点中
             int paramNum = varList->num;
@@ -452,6 +453,7 @@ int GA_ExtDef(struct XASTnode* extDef){
         if(funcDec->childNode[2]->kind == VARLIST)
             funcDec->tac_head = mergeTAC(2, funcDec->tac_head, funcDec->childNode[2]->tac_head);
         struct XASTnode* compSt = extDef->childNode[2];
+        compSt->offset = funcDec->offset + funcDec->width;
         GA_CompSt(compSt);
         extDef->offset += compSt->width;
         extDef->tac_head = mergeTAC(2, funcDec->tac_head, compSt->tac_head);
@@ -499,6 +501,9 @@ int GA_VarList(struct XASTnode* varList){
 //处理函数体
 int GA_CompSt(struct XASTnode* compSt){
     level++;    //层号加1
+    char* type;
+    struct XASTnode* defList;
+    struct XASTnode* stmList;
     for(int i=0;i<4;i++){
         if(compSt->childNode[i] != NULL){
             switch(compSt->childNode[i]->kind){
@@ -508,8 +513,19 @@ int GA_CompSt(struct XASTnode* compSt){
                 level--;    //退出复合语句节点
                 break;
             case DEFLIST:
+                //处理局部变量定义
+                defList = compSt->childNode[i];
+                while(defList != NULL){
+                    struct XASTnode* def = defList->childNode[0];
+                }
+                compSt->width += defList->width;
+                compSt->tac_head = defList->tac_head;   //CompSt下第一个有意义的TAC就是局部变量定义的TAC列表,故直接引用
                 break;
             case STMLIST:
+                stmList = compSt->childNode[i];
+                //TODO:处理StmtList
+                compSt->width += stmList->width;
+                compSt->tac_head = mergeTAC(2, compSt->tac_head, stmList->tac_head);
                 break;
             }
         }
