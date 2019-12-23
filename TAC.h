@@ -91,13 +91,18 @@ char* auto_Temp();
 char* auto_Label();
 //根据变量索引搜索别名
 char* searchAlias(int index);
+//根据变量名搜索符号表中最后匹配的变量符号,返回其索引
+int searchVar(char* id_name);
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);
 int GA_VarList(struct XASTnode* varList);
 int GA_CompSt(struct XASTnode* compSt);
+void GA_Exp(struct XASTnode* exp);
+void GA_Stmt(struct XASTnode* stmt);
 
 void printTAC_ST();
 void printTAC_code(pTACnode tac_head);
+void exitCompSt(int topIndex);
 
 enum OperationType{
     LABEL,
@@ -124,7 +129,8 @@ enum OperationType{
 
 enum SymbolType{
     VAR_SYMBOL,
-    FUNC_SYMBOL
+    FUNC_SYMBOL,
+    TEMP_SYMBOL
 };
 
 

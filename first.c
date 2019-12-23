@@ -9,10 +9,10 @@ float a, b;
 double c;
 
 int func_1(double d1, float f2){
-    int a = 0.5;
+    int a = 5;
     double b1;
-    c1 = 0.5;
-    c2++;
+    b = 0.5;
+    c++;
     return 0.5;
 }
 

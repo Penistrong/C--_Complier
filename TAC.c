@@ -174,19 +174,16 @@ pTACnode generateTAC(int op, int pNum, ...){
     if(pNum == 1){
         switch(op){
         case LABEL:
-            TACnode->op = LABEL;
             TACnode->result = newOpn();
             label = va_arg(pArgs, char*);
             strcpy(TACnode->result->id, label);
             break;
         case GOTO:
-            TACnode->op = GOTO;
             TACnode->result = newOpn();
             label = va_arg(pArgs, char*);
             strcpy(TACnode->result->id, label);
             break;
         case PARAM:
-            TACnode->op = PARAM;
             TACnode->result = newOpn();
             xID = va_arg(pArgs, struct XASTnode*);
             strcpy(TACnode->result->id, searchAlias(xID->place));
@@ -194,7 +191,6 @@ pTACnode generateTAC(int op, int pNum, ...){
             TACnode->result->kind = ID;
             break;
         case FUNCTION:
-            TACnode->op = FUNCTION;
             TACnode->result = newOpn();
             xID = va_arg(pArgs, struct XASTnode*);
             strcpy(TACnode->result->id, xID->type_id);
@@ -204,7 +200,15 @@ pTACnode generateTAC(int op, int pNum, ...){
         default:
             fprintf(err_out, RED"Fatal Error: TAC generator has encountered...\n");
         }
-    }else{
+    }else if(pNum == 2){
+        switch(op){
+        case ASSIGN:
+            TACnode->opn1 = va_arg(pArgs, struct opn*);
+            TACnode->result = va_arg(pArgs, struct opn*);
+            break;
+        }
+    }
+    else{
         TACnode->op = op;
         TACnode->opn1 = va_arg(pArgs, struct opn*);
         TACnode->opn2 = va_arg(pArgs, struct opn*);
@@ -299,6 +303,17 @@ char* searchAlias(int index){
     return tempV->alias;
 }
 
+int searchVar(char* id_name){
+    int rtn_index;
+    pVar tempV = symbolTable->var_symbol;
+    for(int i = 0;i<symbolTable->vindex;i++){
+        if(!strcmp(tempV->name, id_name))
+            rtn_index = i + 1;
+        tempV = tempV->next;
+    }
+    return rtn_index;
+}
+
 int fill_ST(int symbol_kind, int num, char* type, int offset, ...){
     struct XASTnode* xID;
     va_list pArgs = NULL;
@@ -352,8 +367,35 @@ int fill_ST(int symbol_kind, int num, char* type, int offset, ...){
                 tempF = tempF->next;
             tempF->next = newF;
         }
-        symbolTable->findex++;
-        return symbolTable->findex;
+        return ++symbolTable->findex;
+    case TEMP_SYMBOL:
+        xID = va_arg(pArgs, struct XASTnode *); //这里的xID实际对应各类型的常量节点
+        pVar newV = createNewVar();
+        switch(xID->kind){
+        case INT:
+            sprintf(newV->name,"%d",xID->type_int);
+            break;
+        case FLOAT:
+            sprintf(newV->name,"%f",xID->type_float);
+            break;
+        case DOUBLE:
+            sprintf(newV->name,"%lf",xID->type_double);
+            break;
+        } 
+        strcpy(newV->type, type);
+        newV->line = xID->pos;
+        newV->lvl = level;
+        newV->alias = auto_Temp(); 
+        newV->offset = offset; 
+        pVar tempV = symbolTable->var_symbol;
+        if(symbolTable->var_symbol==NULL){
+                symbolTable->var_symbol = newV;
+        }else{
+            while(tempV->next != NULL)
+                tempV = tempV->next;
+            tempV->next = newV;
+        }
+        return ++symbolTable->vindex; 
     }
     
 }
@@ -457,6 +499,7 @@ int GA_ExtDef(struct XASTnode* extDef){
         GA_CompSt(compSt);
         extDef->offset += compSt->width;
         extDef->tac_head = mergeTAC(2, funcDec->tac_head, compSt->tac_head);
+        printf("合并完成\n");
         printTAC_code(extDef->tac_head);
         break;
     case SEMI:
@@ -501,9 +544,12 @@ int GA_VarList(struct XASTnode* varList){
 //处理函数体
 int GA_CompSt(struct XASTnode* compSt){
     level++;    //层号加1
+    int topIndex = symbolTable->vindex;     //保存当前变量符号表中最后一个变量的索引,在其后的所有变量都是在本复合语句内部的变量,退出时全部删除
     char* type;
+    int kind, width, place, tempOffset = compSt->offset;
     struct XASTnode* defList;
     struct XASTnode* stmList;
+    struct XASTnode* tempNode;
     for(int i=0;i<4;i++){
         if(compSt->childNode[i] != NULL){
             switch(compSt->childNode[i]->kind){
@@ -511,25 +557,185 @@ int GA_CompSt(struct XASTnode* compSt){
                 break;
             case RC:
                 level--;    //退出复合语句节点
+                //打印当前符号表
+                printTAC_ST();
+                //删除变量
+                exitCompSt(topIndex);
                 break;
             case DEFLIST:
+                defList->offset = tempOffset;
                 //处理局部变量定义
-                defList = compSt->childNode[i];
+                struct XASTnode* first_dl = defList = compSt->childNode[i];
                 while(defList != NULL){
                     struct XASTnode* def = defList->childNode[0];
+                    type = def->childNode[0]->childNode[0]->type_id;
+                    kind = def->childNode[0]->childNode[0]->kind;
+                    width = calWidth(kind, type);
+                    struct XASTnode* decList = def->childNode[1];
+                    while(decList != NULL){
+                        def->num++; //当前局部变量定义根节点参数个数+1
+                        place = fill_ST(VAR_SYMBOL, 1, type, tempOffset, decList->childNode[0]->childNode[0]->childNode[0]);
+                        tempNode = decList;
+                        //把该decList处的各属性向下传递至ID节点
+                        while(tempNode!=NULL){
+                            tempNode->num = 1;
+                            tempNode->width = width;
+                            tempNode->offset = tempOffset;
+                            tempNode->place = place;
+                            tempNode = tempNode->childNode[0];
+                        }
+                        tempOffset += width;
+                        if(decList->childNode[0]->childNode[1] != NULL){
+                            //此时有定义时便赋值的初始化语句
+                            struct XASTnode* exp = decList->childNode[0]->childNode[2];
+                            exp->offset = tempOffset;
+                            GA_Exp(exp);
+                            struct opn* opn1 = newOpn();
+                            strcpy(opn1->id, searchAlias(place));
+                            opn1->kind = ID;
+                            struct opn* result = newOpn();
+                            strcpy(result->id, searchAlias(exp->place));//TODO:分析右值(常数)并给常数生成一个临时变量
+                            result->kind = ID;
+                            decList->tac_head = decList->childNode[0]->tac_head = mergeTAC(2,exp->tac_head, generateTAC(ASSIGN, 2, opn1, result));
+                            tempOffset += calWidth(exp->childNode[0]->kind);
+                        }
+                        decList = decList->childNode[2];
+                    }
+                    //将当前def下的所有decList对应的TAC合并
+                    pTACnode tac = def->tac_head;
+                    struct XASTnode* t_decl= def->childNode[1];
+                    for(int i = 0;i<def->num;i++){
+                        tac = mergeTAC(2, tac, t_decl->tac_head);
+                        t_decl = t_decl->childNode[2];
+                    }
+                    //printTAC_code(tac);
+                    defList->tac_head = def->tac_head = tac;
+                    first_dl->width += def->width;
+                    first_dl->num++;
+                    defList=defList->childNode[1];
                 }
-                compSt->width += defList->width;
-                compSt->tac_head = defList->tac_head;   //CompSt下第一个有意义的TAC就是局部变量定义的TAC列表,故直接引用
+                //将当前所有defList下的def全部合并到首个defList的TAC节点下
+                pTACnode tac = first_dl->tac_head;
+                struct XASTnode* t_defl = first_dl;
+                for(int j = 0;j<first_dl->num;j++){
+                    tac = mergeTAC(2, tac, t_defl->tac_head);
+                    t_defl = t_defl->childNode[1];
+                }
+                compSt->tac_head = first_dl->tac_head = tac;
+                compSt->width += first_dl->width;
                 break;
             case STMLIST:
+                printTAC_ST();
+                printf("当前偏移量:%d\n", tempOffset);
                 stmList = compSt->childNode[i];
+                struct XASTnode* first_sl = stmList;
+                tac = first_sl->tac_head;
                 //TODO:处理StmtList
-                compSt->width += stmList->width;
-                compSt->tac_head = mergeTAC(2, compSt->tac_head, stmList->tac_head);
+                while(stmList != NULL){
+                    struct XASTnode* stmt = stmList->childNode[0];
+                    stmList->offset = stmt->offset = tempOffset;
+                    GA_Stmt(stmt);
+                    stmList->tac_head = stmt->tac_head;
+                    tac = mergeTAC(2, tac, stmList->tac_head);
+                    compSt->width += stmList->width;
+                    stmList = stmList->childNode[1];    //一定要放在最后
+                }
+                first_sl->tac_head = tac;
+                compSt->tac_head = mergeTAC(2, compSt->tac_head, first_sl->tac_head);
                 break;
             }
         }
     }
+}
+
+void GA_Stmt(struct XASTnode* stmt){
+    printf("分析一条Statement\n");
+    switch(stmt->childNode[0]->kind){
+    case COMPST:
+        GA_CompSt(stmt->childNode[0]);
+        stmt->tac_head = stmt->childNode[0]->tac_head;
+        break;
+    case EXP:
+        GA_Exp(stmt->childNode[0]);
+        stmt->tac_head = stmt->childNode[0]->tac_head;
+        break;
+    case RETURN:
+        break;
+    }
+}
+
+void GA_Exp(struct XASTnode* exp){
+    if(exp == NULL)
+        return;
+    int place;
+    //匹配Exp下只有一个子节点的情况,通常归结为标识符或者常量
+    if(exp->childNode[1]==NULL){
+        struct XASTnode* Const;
+        switch(exp->childNode[0]->kind){
+        case ID:
+            place = searchVar(exp->childNode[0]->type_id);
+            printf("分析已定义的变量,其索引为%d\n", place);
+            exp->place = exp->childNode[0]->place = place;
+            break;
+        default://对应各类型常量
+            Const = exp->childNode[0];
+            Const->offset = exp->offset;
+            exp->place = Const->place = fill_ST(TEMP_SYMBOL, 1, strlwr(Const->name), Const->offset, Const);
+            //生成为临时变量赋予常数值的TAC
+            struct opn* opn1 = newOpn();
+            strcpy(opn1->id, searchAlias(Const->place));
+            opn1->kind = ID;
+            struct opn* result = newOpn();
+            switch(Const->kind){
+            case INT:
+                result->kind = INT;
+                result->const_int = Const->type_int;
+                break;
+            case FLOAT:
+                result->kind = FLOAT;
+                result->const_float = Const->type_float;
+                break;
+            case DOUBLE:
+                result->kind = INT;
+                result->const_double = Const->type_double;
+                break;
+            }
+            exp->tac_head = Const->tac_head = generateTAC(ASSIGN, 2, opn1, result);
+            break;
+        }
+    }else if((exp->childNode[0]->kind != EXP) && (exp->childNode[1]->kind == EXP) && (exp->childNode[2] == NULL)){
+        //左单目操作符
+        //TODO
+    }
+    else if((exp->childNode[1]->kind != EXP) && (exp->childNode[0]->kind == EXP) && (exp->childNode[2] == NULL)){
+        //右单目操作符
+        //TODO
+    }else if((exp->childNode[0]->kind==EXP) && (exp->childNode[2]->kind==EXP)){
+        //双目表达式,两端为Exp,中间为双目操作符
+        struct XASTnode* operator = exp->childNode[1];
+        switch(operator->kind){
+        case ASSIGNOP:
+            GA_Exp(exp->childNode[0]);
+            GA_Exp(exp->childNode[2]);
+            struct opn* opn1 = newOpn();
+            strcpy(opn1->id, searchAlias(exp->childNode[0]->place));
+            opn1->kind = ID;
+            struct opn* result = newOpn();
+            strcpy(result->id, searchAlias(exp->childNode[2]->place));
+            result->kind = ID;
+            exp->tac_head = mergeTAC(2,exp->childNode[2]->tac_head, generateTAC(ASSIGN, 2, opn1, result));
+            break;
+        }
+    }
+}
+
+//删除给定索引后的所有复合语句节点内部新建的变量
+void exitCompSt(int topIndex){
+    pVar p = symbolTable->var_symbol;
+    for(int i=0;i<topIndex - 1;i++)
+        p=p->next;
+    p->next = NULL;
+    symbolTable->vindex = topIndex;//复位符号表最大索引
 }
 
 void printTAC_ST(){
@@ -537,7 +743,7 @@ void printTAC_ST(){
     printf("索引\t变量名\t类型\t别名\t偏移量\t层号\n");
     pVar tempV = symbolTable->var_symbol;
     for(int i = 0;i<symbolTable->vindex;i++){
-        printf("%d\t%s\t%s\t%s\t%d\t%d\n", i+1, tempV->name,tempV->type,tempV->alias,tempV->offset,tempV->lvl);
+        printf("%d\t%-*.5s\t%s\t%s\t%d\t%d\n", i+1, strlen(tempV->name), tempV->name,tempV->type,tempV->alias,tempV->offset,tempV->lvl);
         fprintf(TAC_out, "%d\t%s\t%s\t\t%s\t%d\t%d\n", i, tempV->name,tempV->type,tempV->alias,tempV->offset,tempV->lvl);
         tempV=tempV->next;
     }
@@ -552,6 +758,10 @@ void printTAC_ST(){
 
 //打印以首尾相连的双向循环链表TAC
 void printTAC_code(pTACnode tac_head){
+    if(tac_head == NULL){
+        printf("空TAC，无法打印\n");
+        return;
+    }
     pTACnode h = tac_head;
     do{
         switch(h->op){
@@ -560,6 +770,22 @@ void printTAC_code(pTACnode tac_head){
             break;
         case PARAM:
             printf("\tPARAM %s [offset:%d]\n", h->result->id, h->result->offset);
+            break;
+        case ASSIGN:
+            switch(h->result->kind){
+            case ID:
+                printf("\t%s := %s \n", h->opn1->id, h->result->id);
+                break;
+            case INT:
+                printf("\t%s := #%d \n", h->opn1->id, h->result->const_int);
+                break;
+            case FLOAT:
+                printf("\t%s := #%f \n", h->opn1->id, h->result->const_float);
+                break;
+            case DOUBLE:
+                printf("\t%s := #%lf \n", h->opn1->id, h->result->const_double);
+                break;
+            }
             break;
         }
         h = h->next;
