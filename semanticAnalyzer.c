@@ -7,6 +7,7 @@
 #include "ast.h"
 #include "semanticAnalyzer.h"
 #include "TAC.h"
+#include "OC.h"
 
 //采用作用域与多符号表组织
 
@@ -78,6 +79,7 @@ void semantic_Analyze(struct ASTnode *root){
         TAC_Traversal(xRoot);
         printTAC_ST();
         printTAC_code(xRoot->tac_head);
+        generateOC(xRoot->tac_head);
     }
 }
 

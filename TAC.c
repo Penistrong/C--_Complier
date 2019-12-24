@@ -491,10 +491,12 @@ int TAC_Traversal(struct XASTnode* root){
         break;
     case EXTDEF:
         GA_ExtDef(root);
+        printf("分析完毕所有ExtDef\n");
         break;
     default:
         for(int i = 0;i<8;i++)
-            TAC_Traversal(root->childNode[i]);
+            if(root->childNode[i]!=NULL)
+                TAC_Traversal(root->childNode[i]);
     }
 }
 
@@ -627,6 +629,7 @@ int GA_CompSt(struct XASTnode* compSt){
                 //删除变量
                 exitCompSt(topIndex);
                 printf("删除变量完成\n");
+                printTAC_ST();
                 break;
             case DEFLIST:
                 defList->offset = tempOffset;
@@ -730,7 +733,7 @@ void GA_Stmt(struct XASTnode* stmt){
     case RETURN:
         //Stmt->RETURN Exp SEMI
         GA_Exp(stmt->childNode[1]);
-        printf("RETURN的exp的索引:%d,符号表最大索引:%d, 别名:%s", stmt->childNode[1]->place,symbolTable->vindex,searchAlias(stmt->childNode[1]->place));
+        printf("RETURN的exp的索引:%d,符号表最大索引:%d, 别名:%s\n", stmt->childNode[1]->place,symbolTable->vindex,searchAlias(stmt->childNode[1]->place));
         stmt->tac_head = mergeTAC(2, stmt->childNode[1]->tac_head, generateTAC(RETURN, 1, stmt->childNode[1]->place));
         break;
     case IF:
@@ -937,7 +940,6 @@ void GA_Exp(struct XASTnode* exp){
         //函数调用
         struct XASTnode* id = exp->childNode[0];
         place = searchFunc(id->type_id);
-        printf("PLACE:%d ", place);
         strcpy(exp->content, searchFuncType(place));
         int width = calWidth(searchKind(exp->content)); //函数返回值宽度
         if((exp->childNode[2] != NULL) && (exp->childNode[2]->kind==ARGS)){
@@ -948,7 +950,6 @@ void GA_Exp(struct XASTnode* exp){
                 GA_Exp(args->childNode[0]);
                 exp->width += args->childNode[0]->width;
                 tac = mergeTAC(3, tac, args->childNode[0]->tac_head, generateTAC(ARG,1,searchAlias(args->childNode[0]->place)));
-                printTAC_code(tac);
                 args = args->childNode[2];
             }
             exp->childNode[2]->tac_head = mergeTAC(2, exp->tac_head, tac);
@@ -1133,19 +1134,19 @@ void printTAC_code(pTACnode tac_head){
     do{
         switch(h->op){
         case LABEL:
-            printf("LABEL %s:\n",h->result->id);
+            printf(LIGHT_CYAN"LABEL"GREEN" %s"NONE":\n",h->result->id);
             break;
         case GOTO:
-            printf("\tGOTO %s\n",h->result->id);
+            printf(RED"\tGOTO "GREEN"%s"NONE"\n",h->result->id);
             break;
         case FUNCTION:
-            printf("FUNCTION %s:\n",h->result->id, h->result->offset);
+            printf(PURPLE"FUNCTION"BROWN" %s"NONE":\n",h->result->id, h->result->offset);
             break;
         case PARAM:
-            printf("\tPARAM %s [offset:%d]\n", h->result->id, h->result->offset);
+            printf("\tPARAM"BLUE" %s "NONE"[offset:%d]\n", h->result->id, h->result->offset);
             break;
         case RETURN:
-            printf("\tRETURN %s\n", h->result->id);
+            printf(LIGHT_PURPLE"\tRETURN"NONE" %s\n", h->result->id);
         case ASSIGN:
             switch(h->result->kind){
             case ID:
@@ -1169,7 +1170,7 @@ void printTAC_code(pTACnode tac_head){
             printf("\t\tARG %s\n",h->result->id);
             break;
         case NOT:
-            printf("\tIF !%s GOTO %s\n",h->opn1->id,h->result->id);
+            printf(LIGHT_GRAY"\tIF"NONE" !%s "RED"GOTO "NONE"%s\n",h->opn1->id,h->result->id);
             break;
         case ADD:
             printf("\t%s := %s + %s\n", h->result->id, h->opn1->id, h->opn2->id);
@@ -1184,28 +1185,28 @@ void printTAC_code(pTACnode tac_head){
             printf("\t%s := %s / %s\n", h->result->id, h->opn1->id, h->opn2->id);
             break;
         case JL:
-            printf("\tIF %s < %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s < %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case JLE:
-            printf("\tIF %s <= %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s <= %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case JG:
-            printf("\tIF %s > %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s > %s"LIGHT_RED" GOTO"GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case JGE:
-            printf("\tIF %s >= %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s >= %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case NEQ:
-            printf("\tIF %s != %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s != %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case EQ:
-            printf("\tIF %s == %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s == %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case AND:
-            printf("\tIF %s && %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s && %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         case OR:
-            printf("\tIF %s || %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            printf(RED"\tIF"NONE" %s || %s"LIGHT_RED" GOTO "GREEN"%s"NONE"\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         }
         h = h->next;
