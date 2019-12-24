@@ -231,7 +231,6 @@ pTACnode generateTAC(int op, int pNum, ...){
         }
     }
     else{
-        TACnode->op = op;
         TACnode->opn1 = va_arg(pArgs, struct opn*);
         TACnode->opn2 = va_arg(pArgs, struct opn*);
         TACnode->result = va_arg(pArgs, struct opn*);
@@ -608,7 +607,7 @@ int GA_VarList(struct XASTnode* varList){
     return pIndex_begin;
 }
 
-//处理函数体
+//处理复合语句体
 int GA_CompSt(struct XASTnode* compSt){
     level++;    //层号加1
     int topIndex = symbolTable->vindex;     //保存当前变量符号表中最后一个变量的索引,在其后的所有变量都是在本复合语句内部的变量,退出时全部删除
@@ -625,11 +624,11 @@ int GA_CompSt(struct XASTnode* compSt){
             case RC:
                 level--;    //退出复合语句节点
                 //打印当前符号表
+                printf("即将退出复合语句作用域,当前符号表为\n");
                 printTAC_ST();
                 //删除变量
                 exitCompSt(topIndex);
-                printf("删除变量完成\n");
-                printTAC_ST();
+                printf("退出复合作用域, 删除变量完成\n");
                 break;
             case DEFLIST:
                 defList->offset = tempOffset;
@@ -771,6 +770,20 @@ void GA_Stmt(struct XASTnode* stmt){
         }
         break;
     case WHILE:
+        strcpy(stmt->Jwbt, auto_Label());
+        strcpy(stmt->Jwbf, stmt->Snext);
+        struct XASTnode* exp = stmt->childNode[2];
+        strcpy(exp->Jwbt, stmt->Jwbt);
+        strcpy(exp->Jwbf, stmt->Snext);
+        GA_boolExp(exp);
+        stmt->width += exp->width;
+        strcpy(stmt->childNode[4]->Snext, auto_Label());
+        GA_Stmt(stmt->childNode[4]);
+        stmt->width += stmt->childNode[4]->width;
+        stmt->tac_head = mergeTAC(7,generateTAC(LABEL,1,stmt->childNode[4]->Snext),\
+                                         exp->tac_head,generateTAC(GOTO,1,stmt->Jwbf),\
+                                         generateTAC(LABEL,1,exp->Jwbt),stmt->childNode[4]->tac_head,\
+                                         generateTAC(GOTO,1,stmt->childNode[4]->Snext),generateTAC(LABEL,1,stmt->Jwbf));
         break;
     }
 }
@@ -1037,6 +1050,7 @@ void GA_boolExp(struct XASTnode* exp){
             strcpy(opn2->id, searchAlias(rightExp->place));
             strcpy(result->id, exp->Jwbt);
             exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
+            break;
         case EQ_OP:
             op=EQ;
             strcpy(exp->content, operator->type_id);
@@ -1055,6 +1069,7 @@ void GA_boolExp(struct XASTnode* exp){
             strcpy(opn2->id, searchAlias(rightExp->place));
             strcpy(result->id, exp->Jwbt);
             exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
+            break;
         case AND_OP:
             op=AND;
             strcpy(exp->content, operator->type_id);
@@ -1137,7 +1152,7 @@ void printTAC_code(pTACnode tac_head){
             printf(LIGHT_CYAN"LABEL"GREEN" %s"NONE":\n",h->result->id);
             break;
         case GOTO:
-            printf(RED"\tGOTO "GREEN"%s"NONE"\n",h->result->id);
+            printf("\t"LIGHT_RED"GOTO "GREEN"%s"NONE"\n",h->result->id);
             break;
         case FUNCTION:
             printf(PURPLE"FUNCTION"BROWN" %s"NONE":\n",h->result->id, h->result->offset);
@@ -1146,7 +1161,8 @@ void printTAC_code(pTACnode tac_head){
             printf("\tPARAM"BLUE" %s "NONE"[offset:%d]\n", h->result->id, h->result->offset);
             break;
         case RETURN:
-            printf(LIGHT_PURPLE"\tRETURN"NONE" %s\n", h->result->id);
+            printf("\t"LIGHT_PURPLE"RETURN"NONE" %s\n", h->result->id);
+            break;
         case ASSIGN:
             switch(h->result->kind){
             case ID:
@@ -1170,7 +1186,7 @@ void printTAC_code(pTACnode tac_head){
             printf("\t\tARG %s\n",h->result->id);
             break;
         case NOT:
-            printf(LIGHT_GRAY"\tIF"NONE" !%s "RED"GOTO "NONE"%s\n",h->opn1->id,h->result->id);
+            printf("\t"RED"IF"NONE" !%s "RED"GOTO "NONE"%s\n",h->opn1->id,h->result->id);
             break;
         case ADD:
             printf("\t%s := %s + %s\n", h->result->id, h->opn1->id, h->opn2->id);
