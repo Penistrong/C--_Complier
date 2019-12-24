@@ -746,7 +746,8 @@ void GA_Stmt(struct XASTnode* stmt){
             stmt->width += exp->width;
             GA_Stmt(stmt->childNode[4]);
             stmt->width += stmt->childNode[4]->width;
-            stmt->tac_head = mergeTAC(5, exp->tac_head, generateTAC(GOTO,1,exp->Jwbf), generateTAC(LABEL,1,exp->Jwbt), stmt->childNode[4]->tac_head, generateTAC(LABEL,1,stmt->Jwbf));
+            stmt->tac_head = mergeTAC(5,exp->tac_head,generateTAC(GOTO,1,exp->Jwbf),generateTAC(LABEL,1,exp->Jwbt),\
+                                        stmt->childNode[4]->tac_head,generateTAC(LABEL,1,stmt->Jwbf));
         }else{
             //IF_THEN_ELSE语句
             strcpy(stmt->Jwbt, auto_Label());
@@ -760,8 +761,13 @@ void GA_Stmt(struct XASTnode* stmt){
             stmt->width += stmt->childNode[4]->width;
             GA_Stmt(stmt->childNode[6]);
             stmt->width += stmt->childNode[6]->width;
-            stmt->tac_head = mergeTAC(7,exp->tac_head,generateTAC(GOTO,1,exp->Jwbf),generateTAC(LABEL,1,exp->Jwbt),stmt->childNode[4]->tac_head,generateTAC(LABEL,1,exp->Jwbf),stmt->childNode[6]->tac_head,generateTAC(LABEL,1,stmt->Snext));
+            stmt->tac_head = mergeTAC(7,exp->tac_head,generateTAC(GOTO,1,exp->Jwbf),\
+                                        generateTAC(LABEL,1,exp->Jwbt),stmt->childNode[4]->tac_head,\
+                                        generateTAC(LABEL,1,exp->Jwbf),stmt->childNode[6]->tac_head,\
+                                        generateTAC(LABEL,1,stmt->Snext));
         }
+        break;
+    case WHILE:
         break;
     }
 }
@@ -964,12 +970,18 @@ void GA_Exp(struct XASTnode* exp){
         result->kind = ID;
         result->offset = exp->offset+exp->width;
         exp->tac_head = mergeTAC(3, exp->tac_head, generateTAC(CALL, 2, opn1, result),exp->childNode[2]->tac_head);
+    }else if((exp->childNode[0]->kind==LP) && (exp->childNode[2]->kind==RP)){
+        //括号括起来的Exp
+        GA_Exp(exp->childNode[1]);
+        exp->tac_head = exp->childNode[1]->tac_head;
     }
 }
 
 void GA_boolExp(struct XASTnode* exp){
     if(exp==NULL)
         return;
+    int op;
+    struct opn *opn1,*opn2,*result;
     if(exp->childNode[1]==NULL){
         //已经分析到叶节点了,此处exp下为标识符或者常量
         GA_Exp(exp);
@@ -982,21 +994,103 @@ void GA_boolExp(struct XASTnode* exp){
         strcpy(exp->childNode[1]->Jwbt,exp->Jwbf);
         strcpy(exp->childNode[1]->Jwbf,exp->Jwbt);
         GA_boolExp(exp->childNode[1]);
-        struct opn* opn1 = newOpn();
+        opn1 = newOpn();
         strcpy(opn1->id, searchAlias(exp->place));
         opn1->kind = ID;
-        struct opn* result = newOpn();
+        result = newOpn();
         strcpy(result->id, exp->Jwbt);
         result->kind = ID;
         exp->tac_head = mergeTAC(2, exp->childNode[1]->tac_head, generateTAC(NOT,2,opn1,result));
     }
     else{
         //双目布尔表达式
-        switch(exp->childNode[1]->kind){
+        struct XASTnode* operator = exp->childNode[1];
+        struct XASTnode* leftExp = exp->childNode[0];
+        struct XASTnode* rightExp = exp->childNode[2];
+        switch(operator->kind){
         case RELOP:
+            //注意"=="被单独提了出去做了EQ_OP的判断,实际是一样的逻辑
+            if(!strcmp(operator->type_id, "<"))
+                op = JL;
+            else if(!strcmp(operator->type_id, "<="))
+                op = JLE;
+            else if(!strcmp(operator->type_id, ">"))
+                op = JG;
+            else if(!strcmp(operator->type_id, ">="))
+                op = JGE;
+            else if(!strcmp(operator->type_id, "!="))
+                op = NEQ;
+            strcpy(exp->content, operator->type_id);
+            strcpy(leftExp->Jwbt, exp->Jwbt);
+            strcpy(leftExp->Jwbf, exp->Jwbf);
+            strcpy(rightExp->Jwbt, exp->Jwbt);
+            strcpy(rightExp->Jwbf, exp->Jwbf);
+            GA_boolExp(leftExp);
+            GA_boolExp(rightExp);
+            opn1 = newOpn();
+            opn2 = newOpn();
+            result = newOpn();
+            opn1->kind = opn2->kind = ID;
+            result->kind = LABEL;
+            strcpy(opn1->id, searchAlias(leftExp->place));
+            strcpy(opn2->id, searchAlias(rightExp->place));
+            strcpy(result->id, exp->Jwbt);
+            exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
         case EQ_OP:
+            op=EQ;
+            strcpy(exp->content, operator->type_id);
+            strcpy(leftExp->Jwbt, exp->Jwbt);
+            strcpy(leftExp->Jwbf, exp->Jwbf);
+            strcpy(rightExp->Jwbt, exp->Jwbt);
+            strcpy(rightExp->Jwbf, exp->Jwbf);
+            GA_boolExp(leftExp);
+            GA_boolExp(rightExp);
+            opn1 = newOpn();
+            opn2 = newOpn();
+            result = newOpn();
+            opn1->kind = opn2->kind = ID;
+            result->kind = LABEL;
+            strcpy(opn1->id, searchAlias(leftExp->place));
+            strcpy(opn2->id, searchAlias(rightExp->place));
+            strcpy(result->id, exp->Jwbt);
+            exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
         case AND_OP:
+            op=AND;
+            strcpy(exp->content, operator->type_id);
+            strcpy(leftExp->Jwbt, exp->Jwbt);
+            strcpy(leftExp->Jwbf, exp->Jwbf);
+            strcpy(rightExp->Jwbt, exp->Jwbt);
+            strcpy(rightExp->Jwbf, exp->Jwbf);
+            GA_boolExp(leftExp);
+            GA_boolExp(rightExp);
+            opn1 = newOpn();
+            opn2 = newOpn();
+            result = newOpn();
+            opn1->kind = opn2->kind = ID;
+            result->kind = LABEL;
+            strcpy(opn1->id, searchAlias(leftExp->place));
+            strcpy(opn2->id, searchAlias(rightExp->place));
+            strcpy(result->id, exp->Jwbt);
+            exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
+            break;
         case OR_OP:
+            op=OR;
+            strcpy(exp->content, operator->type_id);
+            strcpy(leftExp->Jwbt, exp->Jwbt);
+            strcpy(leftExp->Jwbf, exp->Jwbf);
+            strcpy(rightExp->Jwbt, exp->Jwbt);
+            strcpy(rightExp->Jwbf, exp->Jwbf);
+            GA_boolExp(leftExp);
+            GA_boolExp(rightExp);
+            opn1 = newOpn();
+            opn2 = newOpn();
+            result = newOpn();
+            opn1->kind = opn2->kind = ID;
+            result->kind = LABEL;
+            strcpy(opn1->id, searchAlias(leftExp->place));
+            strcpy(opn2->id, searchAlias(rightExp->place));
+            strcpy(result->id, exp->Jwbt);
+            exp->tac_head = mergeTAC(3,leftExp->tac_head,rightExp->tac_head,generateTAC(op,3,opn1,opn2,result));
             break;
         }
     }
@@ -1088,6 +1182,30 @@ void printTAC_code(pTACnode tac_head){
             break;
         case DIV:
             printf("\t%s := %s / %s\n", h->result->id, h->opn1->id, h->opn2->id);
+            break;
+        case JL:
+            printf("\tIF %s < %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case JLE:
+            printf("\tIF %s <= %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case JG:
+            printf("\tIF %s > %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case JGE:
+            printf("\tIF %s >= %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case NEQ:
+            printf("\tIF %s != %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case EQ:
+            printf("\tIF %s == %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case AND:
+            printf("\tIF %s && %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
+            break;
+        case OR:
+            printf("\tIF %s || %s GOTO %s\n",h->opn1->id,h->opn2->id,h->result->id);
             break;
         }
         h = h->next;

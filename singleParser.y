@@ -69,7 +69,7 @@ void yyerror(const char* fmt, ...);
 /*每条产生式的语义动作会在整条产生式归约完成后执行 $[x]指向的是语法单元 x是其位置*/
 /*开始符:Program*/
 Program
-        : ExtDefList { $$=createASTnode(1, PROGRAM, "Program", yylineno, $1);printAST($$, 0, -1, NULL, 0); semantic_Analyze($$);/*待定:开启语义分析*/}
+        : ExtDefList { $$=createASTnode(1, PROGRAM, "Program", yylineno, $1);printAST($$, 0, -1, NULL, 0); fflush(yyout); semantic_Analyze($$);/*待定:开启语义分析*/}
         ; //开始符的产生式最后才归约完成, 打印AST也是建完树后最后才执行
 
 ExtDefList

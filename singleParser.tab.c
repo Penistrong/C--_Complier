@@ -1590,7 +1590,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 72 ".\\singleParser.y"
-    { (yyval.node)=createASTnode(1, PROGRAM, "Program", yylineno, (yyvsp[(1) - (1)].node));printAST((yyval.node), 0, -1, NULL, 0); semantic_Analyze((yyval.node));/*待定:开启语义分析*/;}
+    { (yyval.node)=createASTnode(1, PROGRAM, "Program", yylineno, (yyvsp[(1) - (1)].node));printAST((yyval.node), 0, -1, NULL, 0); fflush(yyout); semantic_Analyze((yyval.node));/*待定:开启语义分析*/;}
     break;
 
   case 3:

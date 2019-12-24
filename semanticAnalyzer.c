@@ -227,6 +227,8 @@ int newFuncSymbol(char* type, char* name, int line, int paramNum, ...){
             struct ASTnode* pDec = pDecList[i];
             strcpy(tempParam->type, pDec->childNode[0]->childNode[0]->type_id); //Specifier->Type.type_id
             strcpy(tempParam->name, pDec->childNode[1]->childNode[0]->type_id); //VarDec->ID.type_id
+            //将形参加入变量符号表
+            newVarSymbol(1, tempParam->type, pDec->childNode[1]->childNode[0]);
             if(i != paramNum - 1){
                 tempParam->next = createNewVar();
                 tempParam = tempParam->next;
@@ -564,17 +566,19 @@ char* analyzeExp(struct ASTnode* exp){
             //检查是否为有参函数调用
             if(exp->childNode[2]->kind == ARGS){
                 //检查形参列表个数与类型是否匹配
-                pVar plist = plistFunc(id); //获得对应函数的形参列表
+                pVar plist = plistFunc(id);                             //获得对应函数的形参列表
                 struct ASTnode* args = exp->childNode[2];               //Exp->ID LP ARGS RP
-                struct ASTnode* e = args->childNode[0];    //ARGS->EXP|EXP COMMA ARGS
+                struct ASTnode* e;                                      //ARGS->EXP|EXP COMMA ARGS
                 //检测到第一个错误便结束形参实参比较，防止输出多余信息
                 while(args != NULL){
                     //逐一比较函数调用中实参与形参类型是否匹配
+                    e = args->childNode[0];
                     char* rArgType = analyzeExp(e);
                     if(strcmp(plist->type, rArgType)){
                         printf(RED"Error type 70 at Line %d : "LIGHT_GREEN"In function '%s' call: formal param's type is '%s', but real argument's type is '%s'"NONE"\n", e->pos, id->type_id, plist->type, rArgType);
                         break;
                     }
+
                     plist = plist->next;
                     args = args->childNode[2];
 
@@ -589,7 +593,6 @@ char* analyzeExp(struct ASTnode* exp){
                         break;
                     }
 
-                    e = args->childNode[0];
                 }
             }
         }

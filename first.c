@@ -4,25 +4,29 @@
 * @Last Modified by:   Penistrong
 * @Last Modified time: 2019-12-12 10:00:57
 */
-int a, m, n;
-float a, b;
-double c;
+int a, b, c;
+float m, n;
+double x;
 
 int func_1(double d1, float f2){
     int a = 5;
     double b1;
-    b = 0.5;
-    if(!a)
-        b = f2;
-    if(!b)
-        a = m + n;
+    n = 0.5;
+    if(a == 1)
+        m = f2;
+    if(a && b)
+        a = b + c;
     else
-        m = a * n;
-    a = func_1(d1, a);
+        m = m * n;
+    a = func_1(d1, n);
     c++;
-    return b / f2;
+    return a / b;
 }
 
+void read(){
+    if(m == n)
+        a = b + c;
+}
 
 
 
