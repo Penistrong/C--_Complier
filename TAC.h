@@ -58,6 +58,7 @@ struct XASTnode{
     int width;                      //占数据宽度/字节数
     int num;                        //计数器,用来统计形参数量或者一次性定义的多个变量个数
     int place;                      //标识符节点在符号表中的位置,与符号表中的index对应
+    char* content;                  //主要用于归纳Exp时向上传递Exp表达式分析后的具体类型
 };
 
 typedef struct SymbolTable{
@@ -93,11 +94,20 @@ char* auto_Label();
 char* searchAlias(int index);
 //根据变量名搜索符号表中最后匹配的变量符号,返回其索引
 int searchVar(char* id_name);
+//根据索引寻找符号类型
+char* searchType(int index);
+//根据变量类型字符串寻找对应的变量枚举值
+int searchKind(char* type);
+//根据函数名称字符串寻找对应的函数符号,返回其索引
+int searchFunc(char* func_name);
+//根据函数索引返回函数的返回类型
+char* searchFuncType(int func_index);
 //Assume "generator analyze" as GA
 int GA_ExtDef(struct XASTnode* extDef);
 int GA_VarList(struct XASTnode* varList);
 int GA_CompSt(struct XASTnode* compSt);
 void GA_Exp(struct XASTnode* exp);
+void GA_boolExp(struct XASTnode* exp);
 void GA_Stmt(struct XASTnode* stmt);
 
 void printTAC_ST();
@@ -130,7 +140,8 @@ enum OperationType{
 enum SymbolType{
     VAR_SYMBOL,
     FUNC_SYMBOL,
-    TEMP_SYMBOL
+    TEMP_SYMBOL,
+    REAL_VAL
 };
 
 

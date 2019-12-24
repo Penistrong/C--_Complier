@@ -12,44 +12,23 @@ int func_1(double d1, float f2){
     int a = 5;
     double b1;
     b = 0.5;
+    if(!a)
+        b = f2;
+    if(!b)
+        a = m + n;
+    else
+        m = a * n;
+    a = func_1(d1, a);
     c++;
-    return 0.5;
+    return b / f2;
 }
 
-int cas;
 
-int func_2(int p1, double p2){
-    func_3();
-    c();
-    func_1 = 0.5;
-}
 
-float func_3(){
-    func_2;
-    func_2(1, 1);
-    func_2(1);
-    b = 1;
-    return b;
-}
 
-void func_4(){
-    if(a <= 1){
-        a++;
-    }else if(b == 0){
-        b--;
-        break;
-    }else{
-        a=0;
-        continue;
-    }
 
-    do{
-        a++;
-        if(a >= 0)
-            break;
-        if(a < 0)
-            continue;
-    } while (a <= 0);
-    
-}
+
+
+
+
 
