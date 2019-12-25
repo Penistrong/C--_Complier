@@ -30,6 +30,15 @@ int initSymbolTable(){
     symbolTable->vindex = symbolTable->findex = 0;
     symbolTable->var_symbol = NULL;
     symbolTable->func_symbol = NULL;
+    //添加初始化函数,int read(),int write(int x),用于MIPS32从控制台接收数字并进行相应测试
+    struct XASTnode* init_ID = (struct XASTnode *)calloc(sizeof(struct XASTnode), 1);
+    init_ID->pos = 0;
+    strcpy(init_ID->type_id, "read");
+    fill_ST(FUNC_SYMBOL, 1, "int", 0, init_ID, 0);
+    strcpy(init_ID->type_id, "write");
+    fill_ST(FUNC_SYMBOL, 1, "int", 0, init_ID, 1, 1);
+    strcpy(init_ID->type_id, "x");
+    fill_ST(VAR_SYMBOL, 1, "int", 0, init_ID);
     return 1;
 }
 
@@ -620,6 +629,7 @@ int GA_CompSt(struct XASTnode* compSt){
         if(compSt->childNode[i] != NULL){
             switch(compSt->childNode[i]->kind){
             case LC:
+                printf("进入一个复合节点\n");
                 break;
             case RC:
                 level--;    //退出复合语句节点
@@ -631,9 +641,10 @@ int GA_CompSt(struct XASTnode* compSt){
                 printf("退出复合作用域, 删除变量完成\n");
                 break;
             case DEFLIST:
-                defList->offset = tempOffset;
+                printf("分析DefList\n");
                 //处理局部变量定义
                 struct XASTnode* first_dl = defList = compSt->childNode[i];
+                defList->offset = tempOffset;
                 while(defList != NULL){
                     struct XASTnode* def = defList->childNode[0];
                     type = def->childNode[0]->childNode[0]->type_id;
@@ -664,11 +675,12 @@ int GA_CompSt(struct XASTnode* compSt){
                             struct opn* result = newOpn();
                             strcpy(result->id, searchAlias(exp->place));//TODO:分析右值(常数)并给常数生成一个临时变量
                             result->kind = ID;
-                            decList->tac_head = decList->childNode[0]->tac_head = mergeTAC(2,exp->tac_head, generateTAC(ASSIGN, 2, opn1, result));
+                            decList->tac_head = decList->childNode[0]->tac_head = mergeTAC(2,exp->tac_head, generateTAC(ASSIGN, 2, result, opn1));
                             tempOffset += calWidth(exp->childNode[0]->kind);
                         }
                         decList = decList->childNode[2];
                     }
+                    printf("分析完DecList\n");
                     //将当前def下的所有decList对应的TAC合并
                     pTACnode tac = def->tac_head;
                     struct XASTnode* t_decl= def->childNode[1];
@@ -778,7 +790,9 @@ void GA_Stmt(struct XASTnode* stmt){
         GA_boolExp(exp);
         stmt->width += exp->width;
         strcpy(stmt->childNode[4]->Snext, auto_Label());
+        printf("开始分析while子句中的compSt节点\n");
         GA_Stmt(stmt->childNode[4]);
+        printf("分析完成\n");
         stmt->width += stmt->childNode[4]->width;
         stmt->tac_head = mergeTAC(7,generateTAC(LABEL,1,stmt->childNode[4]->Snext),\
                                          exp->tac_head,generateTAC(GOTO,1,stmt->Jwbf),\
@@ -810,22 +824,22 @@ void GA_Exp(struct XASTnode* exp){
             exp->place = Const->place = fill_ST(TEMP_SYMBOL, 1, strlwr(Const->name), Const->offset, Const);
             exp->width = calWidth(searchKind(strlwr(Const->name)));
             //生成为临时变量赋予常数值的TAC
-            opn1 = newOpn();
-            strcpy(opn1->id, searchAlias(Const->place));
-            opn1->kind = ID;
             result = newOpn();
+            strcpy(result->id, searchAlias(Const->place));
+            result->kind = ID;
+            opn1 = newOpn();
             switch(Const->kind){
             case INT:
-                result->kind = INT;
-                result->const_int = Const->type_int;
+                opn1->kind = INT;
+                opn1->const_int = Const->type_int;
                 break;
             case FLOAT:
-                result->kind = FLOAT;
-                result->const_float = Const->type_float;
+                opn1->kind = FLOAT;
+                opn1->const_float = Const->type_float;
                 break;
             case DOUBLE:
-                result->kind = DOUBLE;
-                result->const_double = Const->type_double;
+                opn1->kind = DOUBLE;
+                opn1->const_double = Const->type_double;
                 break;
             }
             strcpy(exp->content,searchType(exp->place));
@@ -848,10 +862,10 @@ void GA_Exp(struct XASTnode* exp){
             GA_Exp(exp->childNode[0]);
             GA_Exp(exp->childNode[2]);
             opn1 = newOpn();
-            strcpy(opn1->id, searchAlias(exp->childNode[0]->place));
+            strcpy(opn1->id, searchAlias(exp->childNode[2]->place));
             opn1->kind = ID;
             result = newOpn();
-            strcpy(result->id, searchAlias(exp->childNode[2]->place));
+            strcpy(result->id, searchAlias(exp->childNode[0]->place));
             result->kind = ID;
             strcpy(exp->content, exp->childNode[0]->content);
             exp->tac_head = mergeTAC(2,exp->childNode[2]->tac_head, generateTAC(ASSIGN, 2, opn1, result));
@@ -983,7 +997,8 @@ void GA_Exp(struct XASTnode* exp){
         strcpy(result->id, searchAlias(exp->place));
         result->kind = ID;
         result->offset = exp->offset+exp->width;
-        exp->tac_head = mergeTAC(3, exp->tac_head, generateTAC(CALL, 2, opn1, result),exp->childNode[2]->tac_head);
+        //实参传递TAC放在函数调用前
+        exp->tac_head = mergeTAC(3, exp->tac_head, exp->childNode[2]->tac_head, generateTAC(CALL, 2, opn1, result));
     }else if((exp->childNode[0]->kind==LP) && (exp->childNode[2]->kind==RP)){
         //括号括起来的Exp
         GA_Exp(exp->childNode[1]);
@@ -1155,7 +1170,7 @@ void printTAC_code(pTACnode tac_head){
             printf("\t"LIGHT_RED"GOTO "GREEN"%s"NONE"\n",h->result->id);
             break;
         case FUNCTION:
-            printf(PURPLE"FUNCTION"BROWN" %s"NONE":\n",h->result->id, h->result->offset);
+            printf(PURPLE"FUNCTION"BROWN" %s"NONE":\n",h->result->id);
             break;
         case PARAM:
             printf("\tPARAM"BLUE" %s "NONE"[offset:%d]\n", h->result->id, h->result->offset);
@@ -1164,18 +1179,18 @@ void printTAC_code(pTACnode tac_head){
             printf("\t"LIGHT_PURPLE"RETURN"NONE" %s\n", h->result->id);
             break;
         case ASSIGN:
-            switch(h->result->kind){
+            switch(h->opn1->kind){
             case ID:
-                printf("\t%s := %s \n", h->opn1->id, h->result->id);
+                printf("\t%s := %s \n", h->result->id, h->opn1->id);
                 break;
             case INT:
-                printf("\t%s := #%d \n", h->opn1->id, h->result->const_int);
+                printf("\t%s := #%d \n", h->result->id, h->opn1->const_int);
                 break;
             case FLOAT:
-                printf("\t%s := #%f \n", h->opn1->id, h->result->const_float);
+                printf("\t%s := #%f \n", h->result->id, h->opn1->const_float);
                 break;
             case DOUBLE:
-                printf("\t%s := #%lf \n", h->opn1->id, h->result->const_double);
+                printf("\t%s := #%lf \n", h->result->id, h->opn1->const_double);
                 break;
             }
             break;

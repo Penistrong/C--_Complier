@@ -10,7 +10,6 @@
 #include "OC.h"
 
 //采用作用域与多符号表组织
-
 //作用域符号表栈，每当进入新作用域要将当前作用域符号表压栈
 extern pStack stack;
 //Assume Symbol Table as ST
@@ -323,6 +322,7 @@ int analyzeExtDef(struct ASTnode *extDef){
             struct ASTnode* funcDec = extDef->childNode[1];
             if(funcDec->childNode[3]==NULL){
                 //无参函数
+                printf("建立无参函数\n");
                 newFuncSymbol(type, funcDec->childNode[0]->type_id, funcDec->childNode[0]->pos, 0);
             }else{
                 //有参函数,即有VarList节点

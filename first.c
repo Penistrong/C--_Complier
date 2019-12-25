@@ -9,7 +9,7 @@ float m, n;
 double x;
 
 int func_1(double d1, float f2){
-    int a = 5;
+    int a = 5, b = 1;
     double b1;
     n = 0.5;
     if(a < 1)
@@ -18,8 +18,9 @@ int func_1(double d1, float f2){
         a = b + c;
     else
         m = m * n;
-    a = func_1(d1, n);
+    //a = func_1(d1, n);
     while(m >= 0.2){
+        int aa = a;
         a = a + 1;
     }
     c++;
