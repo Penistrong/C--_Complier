@@ -214,6 +214,7 @@ pTACnode generateTAC(int op, int pNum, ...){
             strcpy(TACnode->result->id, searchAlias(place));
             TACnode->result->offset = place;
             TACnode->result->kind = ID;
+            break;
         case ARG:
             TACnode->result = newOpn();
             strcpy(TACnode->result->id, va_arg(pArgs, char*));
@@ -574,8 +575,8 @@ int GA_ExtDef(struct XASTnode* extDef){
         GA_CompSt(compSt);
         extDef->offset += compSt->width;
         extDef->tac_head = mergeTAC(2, funcDec->tac_head, compSt->tac_head);
-        printf("合并完成\n");
-        printTAC_code(extDef->tac_head);
+        printf("当前函数TAC合并完成\n");
+        //printTAC_code(extDef->tac_head);
         break;
     case SEMI:
         break;
@@ -680,7 +681,7 @@ int GA_CompSt(struct XASTnode* compSt){
                         }
                         decList = decList->childNode[2];
                     }
-                    printf("分析完DecList\n");
+                    printf("当前Def下的DecList分析完毕\n");
                     //将当前def下的所有decList对应的TAC合并
                     pTACnode tac = def->tac_head;
                     struct XASTnode* t_decl= def->childNode[1];
@@ -744,7 +745,6 @@ void GA_Stmt(struct XASTnode* stmt){
     case RETURN:
         //Stmt->RETURN Exp SEMI
         GA_Exp(stmt->childNode[1]);
-        printf("RETURN的exp的索引:%d,符号表最大索引:%d, 别名:%s\n", stmt->childNode[1]->place,symbolTable->vindex,searchAlias(stmt->childNode[1]->place));
         stmt->tac_head = mergeTAC(2, stmt->childNode[1]->tac_head, generateTAC(RETURN, 1, stmt->childNode[1]->place));
         break;
     case IF:

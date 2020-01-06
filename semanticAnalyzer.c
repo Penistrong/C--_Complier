@@ -33,20 +33,34 @@ void initializeSymbolTable(){
     current_ST->var_st = (pVar)malloc(sizeof(struct Var_Symbol));
     current_ST->var_st->name = (char*)malloc(sizeof(char)*20);
     current_ST->var_st->type = (char*)malloc(sizeof(char)*20);
-    strcpy(current_ST->var_st->name, "VarName");
-    strcpy(current_ST->var_st->type, "VarType");
+    strcpy(current_ST->var_st->name, "x");
+    strcpy(current_ST->var_st->type, "int");
     current_ST->var_st->line = -1;
+    current_ST->var_st->lvl = 0;
     current_ST->var_st->next = NULL;
 
-    //创建新的函数符号表, 默认函数为__read__函数
+    //创建新的函数符号表, 默认函数为read和write函数
     pFunc_ST_Head func_st = createNewFunc();
-    strcpy(func_st->name, "_read_");
+    strcpy(func_st->name, "read");
     func_st->isDef = 1;
-    strcpy(func_st->fType, "void");
+    strcpy(func_st->fType, "int");
     strcpy(func_st->rType, "void");
     func_st->paramNum = 0;
+    func_st->line = -1;
     func_st->next = NULL;
     current_ST->func_st = func_st;
+    //添加write函数
+    func_st = createNewFunc();
+    strcpy(func_st->name, "write");
+    func_st->isDef = 1;
+    strcpy(func_st->fType, "int");
+    strcpy(func_st->rType, "void");
+    func_st->paramNum = 1;
+    func_st->line = -1;
+    func_st->next = NULL;
+    strcpy(func_st->paramList->type, "int");
+    strcpy(func_st->paramList->name, "x");
+    current_ST->func_st->next = func_st;
 
     //创建结构体符号表
     pStruct_ST_Head struct_st = createNewStruct();
@@ -76,7 +90,7 @@ void semantic_Analyze(struct ASTnode *root){
     if(initTACgenerator() != 0){
         struct XASTnode *xRoot = expandAST(root);
         TAC_Traversal(xRoot);
-        printTAC_ST();
+        //printTAC_ST(); 打印符号表
         printTAC_code(xRoot->tac_head);
         generateOC(xRoot->tac_head);
     }
@@ -102,7 +116,7 @@ void AST_Traversal(struct ASTnode *root){
 int isVarDef(struct ASTnode *ID){
     if(ID == NULL)
         return 0;
-    pVar p = current_ST->var_st->next;  //函数表第一元组是占位符，故从第二元组开始
+    pVar p = current_ST->var_st;  //函数表第一元组是占位符，故从第二元组开始
     while(p!=NULL){
         //当作用域相同且同名时DEBUG Error
         if((strcmp(ID->type_id, p->name)==0) && (p->lvl==lvl))
@@ -116,7 +130,7 @@ int isVarDef(struct ASTnode *ID){
 int isVarDec(struct ASTnode *ID){
     if(ID == NULL)
         return 0;
-    pVar p = current_ST->var_st->next;  //函数表第一元组是占位符，故从第二元组开始
+    pVar p = current_ST->var_st;  
     while(p!=NULL){
         if((strcmp(ID->type_id, p->name)==0))
             return 1;
@@ -129,7 +143,7 @@ int isVarDec(struct ASTnode *ID){
 char* typeVar(struct ASTnode* ID){
     if(ID == NULL)
         return NULL;
-    pVar p =current_ST->var_st->next;
+    pVar p =current_ST->var_st;
     while(p != NULL){
         if(strcmp(ID->type_id, p->name)==0)
             return p->type;
@@ -435,13 +449,16 @@ int analyzeCompSt(struct ASTnode *compSt, int isInBlock, ...){
                     }
                     
                     struct ASTnode* decList = def->childNode[1];
-                    struct ASTnode* ID = decList->childNode[0]->childNode[0]->childNode[0];
-                    newVarSymbol(1, type, ID);
-                    //Dec->VarDec ASSIGNOP Exp
-                    struct ASTnode *exp = decList->childNode[0]->childNode[2];
-                    if(exp != NULL)
-                        if(strcmp(type, analyzeExp(exp)) != 0)
-                            printf(RED"Error type 150 at Line %d : "BROWN"Type mismatch at both ends of Binocular Expression[Left:%s Right:%s]"NONE"\n", exp->pos, type, analyzeExp(exp));
+                    while(decList != NULL){
+                        struct ASTnode* ID = decList->childNode[0]->childNode[0]->childNode[0];
+                        newVarSymbol(1, type, ID);
+                        //Dec->VarDec ASSIGNOP Exp
+                        struct ASTnode *exp = decList->childNode[0]->childNode[2];
+                        if(exp != NULL)
+                            if(strcmp(type, analyzeExp(exp)) != 0)
+                                printf(RED"Error type 150 at Line %d : "BROWN"Type mismatch at both ends of Binocular Expression[Left:%s Right:%s]"NONE"\n", exp->pos, type, analyzeExp(exp));
+                        decList = decList->childNode[2];
+                    }
                     defList = defList->childNode[1];
                 }
                 break;
@@ -547,6 +564,7 @@ char* analyzeExp(struct ASTnode* exp){
                 strcpy(content, "Unknown Type");
             }
         }else{
+            //printf("检测到常量: %s\n", exp->childNode[0]->name);
             strcpy(content, exp->childNode[0]->name);
             strlwr(content);    //各常量对应的name为其实际类型的大写，故使用VC下的strlwr()函数小写化，若在linux下运行则需手动实现strlwr
         }
@@ -649,7 +667,7 @@ void printVar_ST(pVar_ST_Head var_ST_head){
         printf("Error, 变量符号表为空！");
         return;
     }
-    pVar tempVar = var_ST_head->next;
+    pVar tempVar = var_ST_head;
     printf(CYAN"变量符号表\n");
     printf(LIGHT_CYAN"┌───────────────────────┬───────────────────────┬───────────────────────┐\n");
     printf("变量名\t\t\t类型\t\t\t行号\t\t\t层号"NONE"\n");
